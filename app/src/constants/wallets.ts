@@ -1,4 +1,5 @@
 import { Chain, getWalletConnectConnector, Wallet } from '@rainbow-me/rainbowkit'
+import { InjectedConnector } from 'wagmi/connectors/injected'
 
 import getAssetSrc from '../utils/getAssetSrc'
 
@@ -38,7 +39,11 @@ export const qredo = ({ chains }: WalletOptions): Wallet => ({
   },
 })
 
-export const rabby = ({ chains }: WalletOptions): Wallet => ({
+type RabbyWalletOptions = {
+  chains: Chain[]
+  shimDisconnect?: boolean
+}
+export const rabby = ({ chains, shimDisconnect }: RabbyWalletOptions): Wallet => ({
   id: 'rabby',
   name: 'Rabby Wallet',
   iconUrl: getAssetSrc('/images/rabby.jpeg'),
@@ -48,25 +53,12 @@ export const rabby = ({ chains }: WalletOptions): Wallet => ({
   },
   iconBackground: '#e8e8e8',
   createConnector: () => {
-    const connector = getWalletConnectConnector({ chains })
+    const connector = new InjectedConnector({
+      chains,
+      options: { shimDisconnect },
+    })
     return {
       connector,
-      mobile: {
-        getUri: async () => (await connector.getProvider()).connector.uri,
-      },
-      qrCode: {
-        getUri: async () => (await connector.getProvider()).connector.uri,
-        instructions: {
-          learnMoreUrl: 'https://rabby.io/',
-          steps: [
-            {
-              description: 'After you scan, a connection prompt will appear for you to connect your wallet.',
-              step: 'scan',
-              title: 'Tap the scan button',
-            },
-          ],
-        },
-      },
     }
   },
 })
